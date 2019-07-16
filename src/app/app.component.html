@@ -17,5 +17,17 @@
     <h2><a target="_blank" rel="noopener" href="https://blog.angular.io/">Angular blog</a></h2>
   </li>
 </ul>
+{{globalVar1}}
+{{globalVar2}}
+{{globalVar3}}
+
+<button (click)="pressButton()">button</button>
+<div>
+  {{subject1|async}}
+  {{subject2|async}}
+  {{subject3|async}}
+
+  <button (click)="pressButton2()">button</button>
+</div>
 
 <router-outlet></router-outlet>
