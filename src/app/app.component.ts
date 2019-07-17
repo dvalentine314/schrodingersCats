@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Observable, zip, forkJoin, AsyncSubject } from 'rxjs';
+import { Observable, zip, forkJoin, AsyncSubject, timer, BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 @Component({
@@ -27,13 +27,7 @@ export class AppComponent implements OnInit {
     },1000);
   });
 
-  public observable3: Observable<number> = new Observable(subscriber => {
-    setTimeout(() => {
-      subscriber.next(3);
-      subscriber.complete();
-    },1000);
-  });
-
+  public observable3: Observable<number> = timer(1000,2000);
 
   ngOnInit(): void {
     this.currentWayWeDoThings();
@@ -49,7 +43,7 @@ export class AppComponent implements OnInit {
     this.observable1.subscribe(a => {
       this.globalVar1 = a;
       // pretend a is needed to make requests to b and c
-      forkJoin(this.observable2, this.observable3).subscribe(([b, c]) => {
+      zip(this.observable2, this.observable3).subscribe(([b, c]) => {
         this.globalVar2 = b;
         this.globalVar3 = c;
       });
@@ -64,14 +58,16 @@ export class AppComponent implements OnInit {
   //new pattern
   public subject1: AsyncSubject<number> = new AsyncSubject<number>();
   public subject2: AsyncSubject<string>= new AsyncSubject<string>();
-  public subject3: AsyncSubject<number>= new AsyncSubject<number>();
+  public subject3: BehaviorSubject<number>= new BehaviorSubject<number>(0);
 
   newWayToDoThings() {
     this.observable1.subscribe(this.subject1);
 
     this.subject1.subscribe(z => {
       this.observable2.subscribe(this.subject2);
-      this.observable3.subscribe(this.subject3);
+      this.observable3.subscribe(x => {
+        this.subject3.next(x);
+      });
     });
   }
 
