@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Observable, zip, forkJoin, AsyncSubject, timer, BehaviorSubject } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, zip, combineLatest, AsyncSubject, timer, BehaviorSubject } from 'rxjs';
 import { WebRequestEmulatorService } from './web-request-emulator.service';
 
 @Component({
@@ -10,12 +9,13 @@ import { WebRequestEmulatorService } from './web-request-emulator.service';
 })
 export class AppComponent implements OnInit {
 
-  title = 'subjectKings';
 
   constructor(private serverRequests: WebRequestEmulatorService) {
 
   }
 
+
+  // this is just a thing that emits a value every couple of seconds. in a real app this might be some kind of state-manatement output or websocket
   public observable3: Observable<number> = timer(1000,2000);
 
   ngOnInit(): void {
@@ -31,8 +31,8 @@ export class AppComponent implements OnInit {
   currentWayWeDoThings() {
     this.serverRequests.getSomething1FromServer().subscribe(a => {
       this.globalVar1 = a;
-      // pretend a is needed to make requests to b and c
-      zip(this.serverRequests.getSomething2ofSomething1FromServer(a), this.observable3).subscribe(([b, c]) => {
+      // don't worry too much about the function `combine latest` it just emits values when either observable emits
+      combineLatest(this.serverRequests.getSomething2ofSomething1FromServer(a), this.observable3).subscribe(([b, c]) => {
         this.globalVar2 = b;
         this.globalVar3 = c;
       });
@@ -61,11 +61,19 @@ export class AppComponent implements OnInit {
   }
 
   pressButton2() {
+    // don't worry too much about the function `zip` it just emits the current values of the observables.
     zip(this.subject1, this.subject3).subscribe(([z, y]) => {
       console.log(z + y);
     });
   }
 
+
+
 //end new pattern
+
+  respondToFormSubmission(formValue: string): void {
+    // this might be a call to update the value in the services or something.
+    console.log(formValue);
+  }
 
 }

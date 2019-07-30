@@ -11,12 +11,14 @@
 {{globalVar3}}
 
 <button (click)="pressButton()">button</button>
+<app-template-form-demo [something2Input]="globalVar2" (submitFormEvent)="respondToFormSubmission($event)"></app-template-form-demo>
 <div>
   {{subject1|async}}
   {{subject2|async}}
   {{subject3|async}}
 
   <button (click)="pressButton2()">button</button>
+  <app-reactive-form-demo [something2Input]="subject2|async" (submitFormEvent)="respondToFormSubmission($event)"></app-reactive-form-demo>
 </div>
 
 
