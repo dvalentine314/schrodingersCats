@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable, zip, forkJoin, AsyncSubject, timer, BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { WebRequestEmulatorService } from './web-request-emulator.service';
 
 @Component({
   selector: 'app-root',
@@ -11,21 +12,9 @@ export class AppComponent implements OnInit {
 
   title = 'subjectKings';
 
-  // pretend these are services.
-  public observable1: Observable<number> = new Observable(subscriber => {
-    setTimeout(() => {
-      subscriber.next(1);
-      subscriber.complete();
-    },1000);
-  });
+  constructor(private serverRequests: WebRequestEmulatorService) {
 
-
-  public observable2: Observable<string> = new Observable(subscriber => {
-    setTimeout(() => {
-      subscriber.next('2');
-      subscriber.complete();
-    },1000);
-  });
+  }
 
   public observable3: Observable<number> = timer(1000,2000);
 
@@ -40,10 +29,10 @@ export class AppComponent implements OnInit {
   public globalVar3: number;
 
   currentWayWeDoThings() {
-    this.observable1.subscribe(a => {
+    this.serverRequests.getSomething1FromServer().subscribe(a => {
       this.globalVar1 = a;
       // pretend a is needed to make requests to b and c
-      zip(this.observable2, this.observable3).subscribe(([b, c]) => {
+      zip(this.serverRequests.getSomething2ofSomething1FromServer(a), this.observable3).subscribe(([b, c]) => {
         this.globalVar2 = b;
         this.globalVar3 = c;
       });
@@ -61,10 +50,10 @@ export class AppComponent implements OnInit {
   public subject3: BehaviorSubject<number>= new BehaviorSubject<number>(0);
 
   newWayToDoThings() {
-    this.observable1.subscribe(this.subject1);
+    this.serverRequests.getSomething1FromServer().subscribe(this.subject1);
 
     this.subject1.subscribe(z => {
-      this.observable2.subscribe(this.subject2);
+      this.serverRequests.getSomething2ofSomething1FromServer(z).subscribe(this.subject2);
       this.observable3.subscribe(x => {
         this.subject3.next(x);
       });
