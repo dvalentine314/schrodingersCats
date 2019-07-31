@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable, zip, combineLatest, AsyncSubject, timer, BehaviorSubject } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { WebRequestEmulatorService } from './web-request-emulator.service';
 
 @Component({
@@ -52,12 +53,19 @@ export class AppComponent implements OnInit {
   newWayToDoThings() {
     this.serverRequests.getSomething1FromServer().subscribe(this.subject1);
 
-    this.subject1.subscribe(z => {
-      this.serverRequests.getSomething2ofSomething1FromServer(z).subscribe(this.subject2);
-      this.observable3.subscribe(x => {
-        this.subject3.next(x);
-      });
-    });
+    this.subject1.pipe(
+      switchMap(z => this.serverRequests.getSomething2ofSomething1FromServer(z))
+    ).subscribe(this.subject2);
+
+    this.subject1.pipe(
+      switchMap(z => this.observable3)
+    ).subscribe(this.subject3);
+
+    /** instead of combining services to get a computed output you combine the
+     * subjects which keeps everything cleaner and organized*/
+    zip(this.subject2, this.subject3).subscribe(
+      //some logic that needs both
+    );
   }
 
   pressButton2() {
