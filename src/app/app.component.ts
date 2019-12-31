@@ -75,7 +75,8 @@ export class AppComponent implements OnInit, OnDestroy {
     ).subscribe(this.subject3);
 
     /** instead of combining services to get a computed output you combine the
-     * subjects which keeps everything cleaner and organized*/
+     * subjects which keeps everything cleaner and organized
+     */
     zip(this.subject2, this.subject3).subscribe(() => {
       //some logic that needs both
       console.log("subject1 subject2");
