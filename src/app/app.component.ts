@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { Observable, zip, combineLatest, AsyncSubject, timer, BehaviorSubject } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Observable, zip, combineLatest, AsyncSubject, timer, BehaviorSubject, Subscription } from 'rxjs';
+import { switchMap, take } from 'rxjs/operators';
 import { WebRequestEmulatorService } from './web-request-emulator.service';
 
 @Component({
@@ -8,9 +8,9 @@ import { WebRequestEmulatorService } from './web-request-emulator.service';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
 
-
+  subscriptionReference: Subscription;
   constructor(private serverRequests: WebRequestEmulatorService) {
 
   }
@@ -30,7 +30,7 @@ export class AppComponent implements OnInit {
   public globalVar3: number;
 
   currentWayWeDoThings() {
-    this.serverRequests.getSomething1FromServer().subscribe(a => {
+    this.subscriptionReference = this.serverRequests.getSomething1FromServer().subscribe(a => {
       this.globalVar1 = a;
       // don't worry too much about the function `combine latest` it just emits values when either observable emits
       combineLatest(this.serverRequests.getSomething2ofSomething1FromServer(a), this.observable3).subscribe(([b, c]) => {
@@ -41,17 +41,30 @@ export class AppComponent implements OnInit {
   }
 
   pressButton() {
-    console.log(this.globalVar1 + this.globalVar3);
+
+    this.subscriptionReference = this.serverRequests.getSomething1FromServer().subscribe(a => {
+      this.globalVar1 = a;
+      // don't worry too much about the function `combine latest` it just emits values when either observable emits
+      this.observable3.pipe(take(1)).subscribe(z => console.log(z));
+    });
+
   }
 
   //end current pattern
   //new pattern
   public subject1: AsyncSubject<number> = new AsyncSubject<number>();
-  public subject2: AsyncSubject<string>= new AsyncSubject<string>();
-  public subject3: BehaviorSubject<number>= new BehaviorSubject<number>(0);
+  public subject2: AsyncSubject<string> = new AsyncSubject<string>();
+  public subject3: BehaviorSubject<number> = new BehaviorSubject<number>(0);
 
   newWayToDoThings() {
+
+
+
     this.serverRequests.getSomething1FromServer().subscribe(this.subject1);
+
+
+
+
 
     this.subject1.pipe(
       switchMap(z => this.serverRequests.getSomething2ofSomething1FromServer(z))
@@ -63,8 +76,10 @@ export class AppComponent implements OnInit {
 
     /** instead of combining services to get a computed output you combine the
      * subjects which keeps everything cleaner and organized*/
-    zip(this.subject2, this.subject3).subscribe(
+    zip(this.subject2, this.subject3).subscribe(() => {
       //some logic that needs both
+      console.log("subject1 subject2");
+    }
     );
   }
 
@@ -73,6 +88,10 @@ export class AppComponent implements OnInit {
     zip(this.subject1, this.subject3).subscribe(([z, y]) => {
       console.log(z + y);
     });
+  }
+
+  ngOnDestroy() {
+    this.subscriptionReference.unsubscribe();
   }
 
 
