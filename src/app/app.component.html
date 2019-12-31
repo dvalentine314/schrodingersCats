@@ -16,7 +16,14 @@
 
   <button (click)="pressButton2()">button</button>
   <app-reactive-form-demo [something2Input]="subject2|async" (submitFormEvent)="respondToFormSubmission($event)"></app-reactive-form-demo>
+
+  <div>{{errorMessage}}</div>
+  <div>
+    value: {{observableThatErrors|async}}
+  </div>
+
 </div>
+
 
 
 

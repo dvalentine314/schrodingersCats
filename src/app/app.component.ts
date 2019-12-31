@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Observable, zip, combineLatest, AsyncSubject, timer, BehaviorSubject, Subscription } from 'rxjs';
-import { switchMap, take } from 'rxjs/operators';
+import { Observable, zip, combineLatest, AsyncSubject, timer, BehaviorSubject, Subscription, of, throwError, concat } from 'rxjs';
+import { switchMap, take, filter, delay, catchError, tap } from 'rxjs/operators';
 import { WebRequestEmulatorService } from './web-request-emulator.service';
 
 @Component({
@@ -55,6 +55,8 @@ export class AppComponent implements OnInit, OnDestroy {
   public subject1: AsyncSubject<number> = new AsyncSubject<number>();
   public subject2: AsyncSubject<string> = new AsyncSubject<string>();
   public subject3: BehaviorSubject<number> = new BehaviorSubject<number>(0);
+  public observableThatErrors: Observable<number | null>;
+  public errorMessage: string;
 
   newWayToDoThings() {
 
@@ -79,9 +81,19 @@ export class AppComponent implements OnInit, OnDestroy {
      */
     zip(this.subject2, this.subject3).subscribe(() => {
       //some logic that needs both
-      console.log("subject1 subject2");
-    }
-    );
+      console.log("zip of subject1 subject2");
+    });
+
+    //error handling
+    const errorObservable = concat(
+      of(3).pipe(delay(1000)),
+      of(4).pipe(delay(1000)),
+      of(5).pipe(delay(1000)),
+      of(6).pipe(delay(1000)),
+      throwError(new Error('oops!')).pipe(delay(1000)));
+
+    this.observableThatErrors = errorObservable.pipe(catchError(sadValue => { this.errorMessage = sadValue; return of(null); }));
+
   }
 
   pressButton2() {
